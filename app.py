@@ -10,10 +10,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///autism_records.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# Load the trained model
+# Loading the trained model
 model = joblib.load("autism_model.pkl")
 
-# Define Database Model
+# Defining Database
 class AutismRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     age = db.Column(db.Float, nullable=False)
@@ -32,7 +32,7 @@ class AutismRecord(db.Model):
     q10 = db.Column(db.Integer, nullable=False)
     prediction = db.Column(db.String(20), nullable=False)
 
-# Create database
+# Creating database
 with app.app_context():
     db.create_all()
 
@@ -47,26 +47,26 @@ def form():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Extract input values
+        # Extracting input values
         user_input = [int(request.form[f'Q{i + 1}']) for i in range(10)]
         age = float(request.form['age'])
         gender = request.form['gender']
         jaundice = request.form['jaundice']
         autism_family = request.form['autism']
 
-        # Convert categorical values to numeric
+        # Converting categorical values to numeric
         gender_val = 1 if gender == 'Male' else 0
         jaundice_val = 1 if jaundice == 'Yes' else 0
         autism_family_val = 1 if autism_family == 'Yes' else 0
 
-        # Prepare input for model
+        # Preparing input for model
         input_data = np.array([user_input + [age, gender_val, jaundice_val, autism_family_val]])
 
-        # Get prediction
+        # Getting prediction
         prediction = model.predict(input_data)[0]
         result = "Autism Detected" if prediction == 1 else "No Autism Detected"
 
-        # Save record to database
+        # Saving record to database
         new_entry = AutismRecord(
             age=age,
             gender=gender,
@@ -85,7 +85,7 @@ def predict():
 
 @app.route('/records')
 def view_records():
-    entries = AutismRecord.query.all()  # Fetch all records
+    entries = AutismRecord.query.all()  
     return render_template('records.html', entries=entries)
 
 if __name__ == '__main__':
